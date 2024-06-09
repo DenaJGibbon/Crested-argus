@@ -11,14 +11,19 @@ library(ROCR)
 # NOTE you need to change the file paths below to where your files are located on your computer
 
 #  Performance Binary --------------------------------------------------------
-
-# Get a list of TopModel result files
-TopModelresults <- list.files('data/birdnet/allsamples',
-                              full.names = TRUE)
+PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/birdnet',
+           full.names = TRUE)
 
 # Get a list of annotation selection table files
 TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
                           full.names = TRUE)
+
+
+for(a in 1:length(PerformanceFolders)){
+# Get a list of TopModel result files
+TopModelresults <- list.files(PerformanceFolders[[a]],
+                              full.names = TRUE)
+
 
 start.time.buffer <- 3
 end.time.buffer <- 3
@@ -198,4 +203,5 @@ crestedargusBinaryPlot <- ggplot(data = BestF1data.framecrestedargusBinary, aes(
   labs(color  = "Guide name", linetype = "Guide name", shape = "Guide name")
 
 crestedargusBinaryPlot
+
 

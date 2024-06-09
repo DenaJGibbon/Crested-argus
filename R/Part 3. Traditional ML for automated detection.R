@@ -53,12 +53,12 @@ for(e in 1:length(TrainingFolders)){
 
 
 # Automated detection and classification all training data ----------------------------------
-trainingdata <- MFCCFunction(input.dir= 'data/train/', min.freq = min.freq, max.freq = max.freq)
+trainingdata <- MFCCFunction(input.dir= 'data/train_hq/', min.freq = min.freq, max.freq = max.freq)
 
 trainingdata$class <- as.factor(trainingdata$class)
 
 
-output.dir <- 'data/results_random/allsamples_1'
+output.dir <- 'data/results_random/allsamples_hq'
 dir.create(output.dir,recursive = TRUE)
 
 feature.df <- trainingdata

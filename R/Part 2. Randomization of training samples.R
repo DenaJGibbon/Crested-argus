@@ -1,24 +1,24 @@
 # Specify the training folders
-train.signal <- 'data/train/crestedargus/'
+train.signal <- 'data/train_hq/crestedargus/'
 list.train.wavs <- list.files(train.signal,full.names = T)
 signal.class <- 'crestedargus'
 length(list.train.wavs)
 
-train.noise <- 'data/train/noise/'
+train.noise <- 'data/train_hq/noise/'
 list.noise.wavs <- list.files(train.noise,full.names = T)
 noise.class <- 'noise'
 length(list.noise.wavs)
 
-output.dir.random <- 'data/train_random/'
+output.dir.random <- 'data/train_random_hq/'
 
 # Identify the maximum number of samples
-Max.n <- 100
+Max.n <- 30
 
 # Set the number of randomizations
 Random.n <- 5
 
 # Set the random seq
-Random.seq <- seq(5,Max.n,10)
+Random.seq <- seq(5,Max.n,5)
 
 # Loop to randomly sample training data over specified iterations
 for(c in 1:(Random.n)){

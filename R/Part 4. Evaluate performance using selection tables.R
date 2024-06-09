@@ -18,8 +18,8 @@ TopModelresults <- list.files('data/results_random/allsamples_1',
 TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
                           full.names = TRUE)
 
-start.time.buffer <- -8
-end.time.buffer <- 8
+start.time.buffer <- 6
+end.time.buffer <- 6
 
 # Preallocate space for TopModelDetectionDF
 TopModelDetectionDF <- data.frame()
@@ -59,7 +59,7 @@ for (f in 1:length(TopModelresults)) {
       # Determine if the time of the detection is within the time range of an annotation
       TimeBetween <- data.table::between(TempRow$Begin.Time..s.,
                                          TestDataTable$Begin.Time..s. - start.time.buffer,
-                                         TestDataTable$Begin.Time..s. + end.time.buffer)
+                                         TestDataTable$End.Time..s. + end.time.buffer)
 
       # Extract the detections matching the time range
       matched_detections <- TestDataTable[TimeBetween, ]
@@ -85,8 +85,10 @@ for (f in 1:length(TopModelresults)) {
     missed_detections <- TestDataTable[-unlist(DetectionList), ]
     # Prepare missed detections data
     missed_detections <- missed_detections[, c("Selection", "View", "Channel", "Begin.Time..s.", "End.Time..s.", "Low.Freq..Hz.", "High.Freq..Hz.")]
+    missed_detections <- missed_detections
+    missed_detections$File.Name <- ShortName
+    missed_detections$model.type <- 'SVM'
     missed_detections$probability <- 0
-    missed_detections$Detections <- ShortName
     missed_detections$signal <- 'crestedargus'
 
     # Append missed detections to TopModelDetectionDF
