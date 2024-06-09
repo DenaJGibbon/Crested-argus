@@ -1,0 +1,37 @@
+
+
+```{zsh, engine.opts='-i'}
+DATA_DIR="/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/train_random_hq"
+OUTPUT_DIR="/Users/denaclink/Desktop/RStudioProjects/Crested-argus/models/checkpoints/custom"
+cd /Users/denaclink/Documents/BirdNETUpdate/BirdNET-Analyzer
+conda activate birdnet-analyzer
+mkdir -p "$OUTPUT_DIR" && for FOLDER in "$DATA_DIR"/*; do if [ -d "$FOLDER" ]; then FOLDER_NAME=$(basename "$FOLDER"); INPUT_PATH="$FOLDER"; OUTPUT_PATH="$OUTPUT_DIR/${FOLDER_NAME}/${FOLDER_NAME}.tflite"; python train.py --i "$INPUT_PATH" --o "$OUTPUT_PATH" --fmin 500 --fmax 1800 && echo "Processed: $FOLDER_NAME"; fi; done
+
+```
+
+
+```{zsh, engine.opts='-i'}
+
+WAVS_DIR="/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/"
+CLASSIFIERS_BASE_DIR="/Users/denaclink/Desktop/RStudioProjects/Crested-argus/models/checkpoints/custom"
+OUTPUT_BASE_DIR="/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/birdnet"
+
+# Activate conda environment and change to the working directory
+cd /Users/denaclink/Documents/BirdNETUpdate/BirdNET-Analyzer
+conda activate birdnet-analyzer
+
+mkdir -p "$OUTPUT_BASE_DIR" && for FOLDER in "$CLASSIFIERS_BASE_DIR"/*; do 
+    if [ -d "$FOLDER" ]; then 
+        for CLASSIFIER_PATH in "$FOLDER"/*.tflite; do 
+            if [ -f "$CLASSIFIER_PATH" ]; then 
+                CLASSIFIER_NAME=$(basename "$CLASSIFIER_PATH" .tflite)
+                OUTPUT_PATH="$OUTPUT_BASE_DIR/$CLASSIFIER_NAME"
+                mkdir -p "$OUTPUT_PATH"
+                python analyze.py --i "$WAVS_DIR" --classifier "$CLASSIFIER_PATH" --o "$OUTPUT_PATH" --fmin 500 --fmax 1800 && echo "Processed with classifier: $CLASSIFIER_NAME"
+            fi
+        done
+    fi 
+done
+
+```
+

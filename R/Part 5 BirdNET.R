@@ -19,9 +19,12 @@ TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/Validation
                           full.names = TRUE)
 
 
-for(a in 1:length(PerformanceFolders)){
+CombinedF1data <- data.frame()
+
+for(z in 1:length(PerformanceFolders)){
+print(paste('processing', z, 'out of', length(PerformanceFolders)))
 # Get a list of TopModel result files
-TopModelresults <- list.files(PerformanceFolders[[a]],
+TopModelresults <- list.files(PerformanceFolders[[z]],
                               full.names = TRUE)
 
 
@@ -132,13 +135,8 @@ for (a in Seq) {
 }
 }
 
-head(TopModelDetectionDF)
-nrow(TopModelDetectionDF)
+
 TopModelDetectionDF$Class <- as.factor(TopModelDetectionDF$Class)
-
-table(TopModelDetectionDF$Class)
-
-subset(TopModelDetectionDF,Class=='crestedargus')
 
 # Convert Class column to a factor variable
 TopModelDetectionDF$Class <- as.factor(TopModelDetectionDF$Class)
@@ -148,7 +146,6 @@ unique(TopModelDetectionDF$Class)
 
 # Define a vector of confidence Thresholds
 Thresholds <-seq(0.1,0.9,0.1)
-Thresholds <- c(Thresholds,seq(.9,1,.01))
 
 # Create an empty data frame to store results
 BestF1data.framecrestedargusBinary <- data.frame()
@@ -181,27 +178,26 @@ for(a in 1:length(Thresholds)){
     TempF1Row <- cbind.data.frame(F1, Precision, Recall,FPR)
     TempF1Row$Thresholds <- Thresholds[a]
     BestF1data.framecrestedargusBinary <- rbind.data.frame(BestF1data.framecrestedargusBinary, TempF1Row)
-  }
+}
 
-BestF1data.framecrestedargusBinary
 
-crestedargusMax <- round(max(na.omit(BestF1data.framecrestedargusBinary$F1)),2)
 
-# Metric plot
-crestedargusBinaryPlot <- ggplot(data = BestF1data.framecrestedargusBinary, aes(x = Thresholds)) +
-  geom_line(aes(y = F1, color = "F1", linetype = "F1")) +
-  geom_line(aes(y = Precision, color = "Precision", linetype = "Precision")) +
-  geom_line(aes(y = Recall, color = "Recall", linetype = "Recall")) +
-  labs(title = paste("Crested argus (binary) \n max F1:",crestedargusMax),
-       x = "Confidence",
-       y = "Values") +
-  scale_color_manual(values = c("F1" = "blue", "Precision" = "red", "Recall" = "green"),
-                     labels = c("F1", "Precision", "Recall")) +
-  scale_linetype_manual(values = c("F1" = "dashed", "Precision" = "dotted", "Recall" = "solid")) +
-  theme_minimal() +
-  theme(legend.title = element_blank())+
-  labs(color  = "Guide name", linetype = "Guide name", shape = "Guide name")
+BestF1data.framecrestedargusBinary$PerformanceFolder <- basename(PerformanceFolders[[z]])
 
-crestedargusBinaryPlot
+pp <- as.numeric(TopModelDetectionDF$Confidence)
+ll <- TopModelDetectionDF$Class
 
+pred <- prediction(pp, ll)
+
+perf <- performance(pred, "auc")
+BestF1data.framecrestedargusBinary$auc <- perf@y.values[[1]]
+
+CombinedF1data <- rbind.data.frame(CombinedF1data,BestF1data.framecrestedargusBinary)
+}
+
+CombinedF1data$samples <- str_split_fixed(CombinedF1data$PerformanceFolder,pattern = '_',n=2)[,1]
+ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')
+ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='F1',facet.by = 'Thresholds')
+
+ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',color = 'samples')
 
