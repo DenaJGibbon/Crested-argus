@@ -3,8 +3,6 @@ library(stringr)
 library(tuneR)
 library(apcluster)
 
-devtools::load_all("/Users/denaclink/Desktop/RStudioProjects/gibbonR")
-
 
 # Data preparation --------------------------------------------------------
 SelectionTablesTrainingPath <- '/Users/denaclink/Downloads/Data_test_Argus/TrainingSelections/'
@@ -19,6 +17,20 @@ dir.create(output.dir.train.noise,recursive = T)
 class <- 'crestedargus'
 
 # Data exploration using selection tables ---------------------------------
+AllFiles <- '/Users/denaclink/Downloads/Data_test_Argus'
+
+# Read in files
+AllFileslist <- list.files('/Users/denaclink/Downloads/Data_test_Argus',recursive = TRUE,
+                           pattern = '.txt', full.names = TRUE)
+
+# Combine into list
+AllFilesdf <- lapply( AllFileslist, read.delim, header = T, sep ="\t")
+
+# Combine into dataframe
+AllFilesdfcombined <- do.call(rbind, AllFilesdf )
+
+# How many detections are there?
+nrow(AllFilesdfcombined)
 
 # Explore Raven Selection tables
 SelectionTablesTraining <- list.files(SelectionTablesTrainingPath,

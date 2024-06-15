@@ -11,7 +11,7 @@ library(ggplot2)
 # KSWS Performance Binary --------------------------------------------------------
 
 # Get a list of TopModel result files
-TopModelresults <- list.files('data/results_random/allsamples_1',
+TopModelresults <- list.files('data/results_tradML/allsamples_hq',
                               full.names = TRUE)
 
 # Get a list of annotation selection table files
@@ -127,7 +127,7 @@ unique(TopModelDetectionDF$signal)
 Thresholds <-seq(0.1,1,0.1)
 
 # Create an empty data frame to store results
-BestF1data.framecrestedargusBinary <- data.frame()
+BestF1data.framecrestedargusBinary.ML <- data.frame()
 
 # Loop through each threshold value
 for(a in 1:length(Thresholds)){
@@ -156,15 +156,15 @@ for(a in 1:length(Thresholds)){
   #TrainingData <- training_data_type
   TempF1Row <- cbind.data.frame(F1, Precision, Recall,FPR)
   TempF1Row$Thresholds <- Thresholds[a]
-  BestF1data.framecrestedargusBinary <- rbind.data.frame(BestF1data.framecrestedargusBinary, TempF1Row)
+  BestF1data.framecrestedargusBinary.ML <- rbind.data.frame(BestF1data.framecrestedargusBinary.ML, TempF1Row)
 }
 
-BestF1data.framecrestedargusBinary
+BestF1data.framecrestedargusBinary.ML
 
-crestedargusMax <- round(max(na.omit(BestF1data.framecrestedargusBinary$F1)),2)
+crestedargusMax <- round(max(na.omit(BestF1data.framecrestedargusBinary.ML$F1)),2)
 
 # Metric plot
-crestedargusBinaryPlot <- ggplot(data = BestF1data.framecrestedargusBinary, aes(x = Thresholds)) +
+crestedargusBinaryPlot <- ggplot(data = BestF1data.framecrestedargusBinary.ML, aes(x = Thresholds)) +
   geom_line(aes(y = F1, color = "F1", linetype = "F1")) +
   geom_line(aes(y = Precision, color = "Precision", linetype = "Precision")) +
   geom_line(aes(y = Recall, color = "Recall", linetype = "Recall")) +

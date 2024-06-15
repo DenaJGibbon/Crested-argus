@@ -6,7 +6,7 @@ library(dplyr)    # For data manipulation
 library(data.table) # For sorting the detections
 library(ggplot2)
 library(ROCR)
-
+library(pROC)
 
 # NOTE you need to change the file paths below to where your files are located on your computer
 
@@ -18,6 +18,8 @@ PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crest
 TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
                           full.names = TRUE)
 
+start.time.buffer <- 6
+end.time.buffer <- 6
 
 CombinedF1data <- data.frame()
 
@@ -26,10 +28,6 @@ print(paste('processing', z, 'out of', length(PerformanceFolders)))
 # Get a list of TopModel result files
 TopModelresults <- list.files(PerformanceFolders[[z]],
                               full.names = TRUE)
-
-
-start.time.buffer <- 3
-end.time.buffer <- 3
 
 # Preallocate space for TopModelDetectionDF
 TopModelDetectionDF <- data.frame()
@@ -171,7 +169,7 @@ for(a in 1:length(Thresholds)){
     Precision <- caretConf$byClass[5]
     Recall <- caretConf$byClass[6]
     FP <- caretConf$table[1,2]
-    TN <- sum(caretConf$table[2,])#+JahooAdj
+    TN <- sum(caretConf$table[2,])
     FPR <-  FP / (FP + TN)
     # Create a row for the result and add it to the BestF1data.frameGreyGibbon
     #TrainingData <- training_data_type
@@ -187,17 +185,33 @@ BestF1data.framecrestedargusBinary$PerformanceFolder <- basename(PerformanceFold
 pp <- as.numeric(TopModelDetectionDF$Confidence)
 ll <- TopModelDetectionDF$Class
 
-pred <- prediction(pp, ll)
 
-perf <- performance(pred, "auc")
-BestF1data.framecrestedargusBinary$auc <- perf@y.values[[1]]
+roc.s100b <- auc(roc(response=TopModelDetectionDF$Class,predictor= as.numeric(TopModelDetectionDF$Confidence)))
+
+BestF1data.framecrestedargusBinary$auc <- as.numeric(roc.s100b)
+
 
 CombinedF1data <- rbind.data.frame(CombinedF1data,BestF1data.framecrestedargusBinary)
 }
 
-CombinedF1data$samples <- str_split_fixed(CombinedF1data$PerformanceFolder,pattern = '_',n=2)[,1]
-ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')
-ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='F1',facet.by = 'Thresholds')
+CombinedF1data <- na.omit(CombinedF1data)
+CombinedF1data$samples <- as.factor(str_split_fixed(CombinedF1data$PerformanceFolder,pattern = '_',n=2)[,1])
+CombinedF1data$Precision <- round(CombinedF1data$Precision,1)
+CombinedF1data$Recall <- round(CombinedF1data$Recall,1)
+CombinedF1data$F1 <- round(CombinedF1data$F1,1)
 
-ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',color = 'samples')
+levels(CombinedF1data$samples ) <- c("10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
+                                     "5 samples", "All samples (LQ)", "All samples (HQ)")
+
+CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("5 samples","10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
+                                           "All samples (LQ)", "All samples (HQ)"))
+
+AUCPlot <- ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')+xlab('')+ylab('AUC')
+F1Plot <- ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',facet.by = 'samples')
+ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='Precision',facet.by = 'samples')
+PrecRec <- ggpubr::ggboxplot(data=CombinedF1data,x='Precision',y='Recall',facet.by = 'samples')
+
+cowplot::plot_grid(AUCPlot,F1Plot,PrecRec,nrow=2,labels = c('A)','B)','C)')
+
+
 
