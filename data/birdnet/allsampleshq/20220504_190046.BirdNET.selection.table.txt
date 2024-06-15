@@ -1,0 +1,5 @@
+Selection	View	Channel	Begin Path	File Duration (s)	Begin Time (s)	End Time (s)	Low Freq (Hz)	High Freq (Hz)	Species Code	Common Name	Confidence
+1	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_190046.wav	3580	1305.0	1308.0	500	1800	crestedargus	crestedargus	0.1252
+2	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_190046.wav	3580	1416.0	1419.0	500	1800	crestedargus	crestedargus	0.1023
+3	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_190046.wav	3580	1875.0	1878.0	500	1800	crestedargus	crestedargus	0.1206
+4	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_190046.wav	3580	2478.0	2481.0	500	1800	crestedargus	crestedargus	0.1031

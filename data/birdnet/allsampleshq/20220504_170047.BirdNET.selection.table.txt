@@ -1,0 +1,15 @@
+Selection	View	Channel	Begin Path	File Duration (s)	Begin Time (s)	End Time (s)	Low Freq (Hz)	High Freq (Hz)	Species Code	Common Name	Confidence
+1	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	24.0	27.0	500	1800	crestedargus	crestedargus	0.2580
+2	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	75.0	78.0	500	1800	crestedargus	crestedargus	0.1417
+3	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	189.0	192.0	500	1800	crestedargus	crestedargus	0.1427
+4	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	201.0	204.0	500	1800	crestedargus	crestedargus	0.1734
+5	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	204.0	207.0	500	1800	crestedargus	crestedargus	0.1292
+6	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	252.0	255.0	500	1800	crestedargus	crestedargus	0.1752
+7	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	264.0	267.0	500	1800	crestedargus	crestedargus	0.1223
+8	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	267.0	270.0	500	1800	crestedargus	crestedargus	0.2407
+9	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	309.0	312.0	500	1800	crestedargus	crestedargus	0.1001
+10	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	312.0	315.0	500	1800	crestedargus	crestedargus	0.2365
+11	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	1170.0	1173.0	500	1800	crestedargus	crestedargus	0.1875
+12	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	1173.0	1176.0	500	1800	crestedargus	crestedargus	0.2407
+13	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	2025.0	2028.0	500	1800	crestedargus	crestedargus	0.1638
+14	Spectrogram 1	1	/Users/denaclink/Downloads/Data_test_Argus/ValidationWavs/20220504_170047.wav	3586	2028.0	2031.0	500	1800	crestedargus	crestedargus	0.2851
