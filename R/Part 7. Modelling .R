@@ -24,9 +24,9 @@ ArgusDF$LunarCategory <- as.factor((lunar.phase(as.Date(ArgusDF$LunarDate), name
 
 ArgusDF$LunarIllumination <- round(lunar.illumination(as.Date(ArgusDF$LunarDate)),2)
 
-ArgusDFTimeSub <- subset(ArgusDF, hour <= 6 | hour >= 18 )
+ArgusDFTimeSub <- subset(ArgusDF, hour < 5 | hour > 18 )
 
-ggboxplot(data=ArgusDFTimeSub,x='LunarIllumination', y="n.detection" )
+ggscatter(data=ArgusDFTimeSub,x='LunarIllumination', y="n.detection" )
 
 
 
@@ -39,19 +39,20 @@ ArgusDFTimeSub$n.detection <-
   ifelse(ArgusDFTimeSub$n.detection  == 0 , 0, 1)
 
 m.argusslunarbinary.intercept <-
-  glmmTMB(n.detection ~   (1 | LunarDate),
+  glmmTMB(n.detection ~   (1 | Site/LunarDate),
           data = ArgusDFTimeSub,
           family = "binomial")
 
 m.argusslunarbinary.1 <-
-  glmmTMB(n.detection ~ LunarCategory + (1 | LunarDate),
+  glmmTMB(n.detection ~ LunarCategory + (1 | Site/LunarDate),
           data = ArgusDFTimeSub,
           family = "binomial")
 
 m.argusslunarbinary.2  <-
-  glmmTMB(n.detection ~ LunarIllumination + (1 | LunarDate),
+  glmmTMB(n.detection ~ LunarIllumination + (1 | Site/LunarDate),
           data = ArgusDFTimeSub,
           family = "binomial")
+
 
 
 
@@ -64,14 +65,15 @@ bbmle::AICctab(
 
 
 # Calculate pseudo R-squared
-MuMIn::r.squaredGLMM(m.argusslunarbinary.intercept)
+MuMIn::r.squaredGLMM(m.argusslunarbinary.2)
 
 # Model diagnostics
 performance::check_residuals(m.argusslunarbinary.intercept)
 
 # Check collinearity
-performance::check_collinearity(m.argusslunarbinary.intercept)
+performance::check_collinearity(m.argusslunarbinary.2)
 
+sjPlot::plot_model(m.argusslunarbinary.2,type = 'est',vline.color = "red")
 
 # Get weather data --------------------------------------------------------
 Lat1 <- str_split_fixed(ArgusDF$lat,pattern = ',',n=2)[,1]
@@ -183,6 +185,8 @@ levels(argus.aggregate.off.set$time.category) <- c('Afternoon','Night','Late Nig
 
 argus.aggregate.off.set$Rainfall <-  argus.aggregate.off.set$PRECTOTCORR
 
+#month(argus.aggregate.off.set$LunarDate)
+
 m.argusscomb.intercept <-
   glmmTMB(
     n.detection ~  (1 | Site/LunarDate),
@@ -204,20 +208,18 @@ m.argusscomb.2 <-
     family = "binomial"
   )
 
-m.argusscomb.3 <-
+m.argusscomb.2 <-
   glmmTMB(
-    n.detection ~   Rainfall  +  (1 |Site/LunarDate),
+    n.detection ~  time.category  +  (1 | Site/LunarDate),
     data = argus.aggregate.off.set,
     family = "binomial"
   )
-
 
 # Compare models using AIC
 bbmle::AICctab(
   m.argusscomb.intercept,
   m.argusscomb.1,
   m.argusscomb.2,
-  m.argusscomb.3,
   weights = T
 )
 
@@ -232,7 +234,7 @@ MuMIn::r.squaredGLMM(m.argusscomb.2)
 # Check for normality of residuals
 check_residuals(simulate_residuals(m.argusscomb.2))
 
-sjPlot::plot_model(m.argusscomb.2, sort.est = TRUE, vline.color = "red",show.values = TRUE,
+sjPlot::plot_model(m.argusscomb.2, sort.est = TRUE, vline.color = "red",show.values = TRUE, show.p = FALSE,
                    title = "Crested argus calls (binary)")+theme_bw()
 
 
