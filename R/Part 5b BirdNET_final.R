@@ -11,15 +11,15 @@ library(pROC)
 # NOTE you need to change the file paths below to where your files are located on your computer
 
 #  Performance Binary --------------------------------------------------------
-PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/birdnet',
+PerformanceFolders <- list.files('//Users/denaclink/Desktop/RStudioProjects/Crested-argus/birdnetfinal',
                                  full.names = TRUE)
 
 # Get a list of annotation selection table files
-TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
+TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/TestSelections',
                           full.names = TRUE)
 
-start.time.buffer <- 6
-end.time.buffer <- 6
+start.time.buffer <- 3
+end.time.buffer <- 3
 
 CombinedF1data <- data.frame()
 
@@ -28,7 +28,7 @@ for(z in 1:length(PerformanceFolders)){
   # Get a list of TopModel result files
   TopModelresults <- list.files(PerformanceFolders[[z]],
                                 full.names = TRUE)
-
+  #TopModelresults <- TopModelresults[-c(6,7)]
   # Preallocate space for TopModelDetectionDF
   TopModelDetectionDF <- data.frame()
 
@@ -195,23 +195,24 @@ for(z in 1:length(PerformanceFolders)){
 }
 
 CombinedF1data <- na.omit(CombinedF1data)
+
+CombinedF1data[which.max(CombinedF1data$F1),]
+
 CombinedF1data$samples <- as.factor(str_split_fixed(CombinedF1data$PerformanceFolder,pattern = '_',n=2)[,1])
 CombinedF1data$Precision <- round(CombinedF1data$Precision,1)
 CombinedF1data$Recall <- round(CombinedF1data$Recall,1)
 CombinedF1data$F1 <- round(CombinedF1data$F1,1)
 
-levels(CombinedF1data$samples ) <- c("10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
-                                     "5 samples", "All samples (LQ)", "All samples (HQ)")
+levels(CombinedF1data$samples ) <- c("All samples (HQ)" )
 
-CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("5 samples","10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
-                                                                    "All samples (LQ)", "All samples (HQ)"))
+CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("All samples (HQ)"))
 
 AUCPlot <- ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')+xlab('')+ylab('AUC')+ylim(0,1)
 F1Plot <- ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',facet.by = 'samples')+ylim(0,1)+xlab('Confidence')
 ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='Precision',facet.by = 'samples')
 PrecRec <- ggpubr::ggboxplot(data=CombinedF1data,x='Precision',y='Recall',facet.by = 'samples')
 
-pdf('birdNET_results.pdf',height=12,width=11)
+pdf('birdNET_results_final.pdf',height=12,width=11)
 cowplot::plot_grid(AUCPlot,F1Plot,PrecRec,nrow=3,labels = c('A)','B)','C)'),label_x = 0.9, label_y = 0.98)
 graphics.off()
 

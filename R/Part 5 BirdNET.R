@@ -9,6 +9,7 @@ library(ROCR)
 library(pROC)
 
 # NOTE you need to change the file paths below to where your files are located on your computer
+detect.class <- 'crestedargus'
 
 #  Performance Binary --------------------------------------------------------
 PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/birdnet',
@@ -18,8 +19,8 @@ PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crest
 TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
                           full.names = TRUE)
 
-start.time.buffer <- 6
-end.time.buffer <- 6
+start.time.buffer <- 3
+end.time.buffer <- 3
 
 CombinedF1data <- data.frame()
 
@@ -42,7 +43,7 @@ for (a in Seq) {
 
   TempTopModelTable <- TempTopModelTable[,-c(4,5)]
 
-  TempTopModelTable <- subset(TempTopModelTable,Common.Name=='crestedargus')
+  TempTopModelTable <- subset(TempTopModelTable,Common.Name==detect.class)
 
   # Extract the short name of the TopModel result file
   ShortName <- basename(TopModelresults[a])
@@ -54,7 +55,7 @@ for (a in Seq) {
   if(length(testDataIndex) > 0){
   TestDataTable <- read.delim2(TestDataSet[testDataIndex])
 
-  TestDataTable$Class <- 'crestedargus'
+  TestDataTable$Class <- detect.class
   # Round Begin.Time..s. and End.Time..s. columns to numeric
   TestDataTable$Begin.Time..s. <- round(as.numeric(TestDataTable$Begin.Time..s.))
   TestDataTable$End.Time..s. <- round(as.numeric(TestDataTable$End.Time..s.))
@@ -82,7 +83,7 @@ for (a in Seq) {
 
       if (nrow(matched_detections) > 0) {
         # Set Class based on the Call.Type in matched_detections
-        TempRow$Class <- 'crestedargus'
+        TempRow$Class <- detect.class
         DetectionList[[length( unlist(DetectionList))+1]] <-  which(TimeBetween == TRUE)
       } else {
         # Set Class to 'noise' if no corresponding annotation is found
@@ -104,10 +105,10 @@ for (a in Seq) {
     missed_detections <- missed_detections[, c("Selection", "View", "Channel", "Begin.Time..s.", "End.Time..s.", "Low.Freq..Hz.", "High.Freq..Hz.")]
     #missed_detections$Detections <- ShortName
     missed_detections$Confidence <- 0
-    missed_detections$Species.Code <- 'crestedargus'
-    missed_detections$Common.Name <- 'crestedargus'
+    missed_detections$Species.Code <- detect.class
+    missed_detections$Common.Name <- detect.class
 
-    missed_detections$Class <- 'crestedargus'
+    missed_detections$Class <- detect.class
 
     # Append missed detections to TopModelDetectionDF
     TopModelDetectionDF <- rbind.data.frame(TopModelDetectionDF, missed_detections)
@@ -120,10 +121,10 @@ for (a in Seq) {
     missed_detections <- missed_detections[, c("Selection", "View", "Channel", "Begin.Time..s.", "End.Time..s.", "Low.Freq..Hz.", "High.Freq..Hz.")]
     missed_detections$Confidence <- 0
     #missed_detections$Detections <- ShortName
-    missed_detections$Species.Code <- 'crestedargus'
-    missed_detections$Common.Name <- 'crestedargus'
+    missed_detections$Species.Code <- detect.class
+    missed_detections$Common.Name <- detect.class
 
-    missed_detections$Class <- 'crestedargus'
+    missed_detections$Class <- detect.class
 
     # Append missed detections to TopModelDetectionDF
     TopModelDetectionDF <- rbind.data.frame(TopModelDetectionDF, missed_detections)
@@ -155,12 +156,12 @@ for(a in 1:length(Thresholds)){
   TopModelDetectionDF_single <-TopModelDetectionDF
 
   TopModelDetectionDF_single$PredictedClass <-
-    ifelse(TopModelDetectionDF_single$Confidence  <=Thresholds[a], 'noise','crestedargus')
+    ifelse(TopModelDetectionDF_single$Confidence  <=Thresholds[a], 'noise',detect.class)
 
     # Calculate confusion matrix using caret package
     caretConf <- caret::confusionMatrix(
       as.factor(TopModelDetectionDF_single$PredictedClass),
-      as.factor(TopModelDetectionDF_single$Class),positive = 'crestedargus',
+      as.factor(TopModelDetectionDF_single$Class),positive = detect.class,
       mode = 'everything')
 
 
@@ -182,13 +183,17 @@ for(a in 1:length(Thresholds)){
 
 BestF1data.framecrestedargusBinary$PerformanceFolder <- basename(PerformanceFolders[[z]])
 
-pp <- as.numeric(TopModelDetectionDF$Confidence)
-ll <- TopModelDetectionDF$Class
+pred <- prediction( as.numeric(TopModelDetectionDF$Confidence), TopModelDetectionDF$Class)
+perf <- performance(pred, "auc")
 
 
-roc.s100b <- auc(roc(response=TopModelDetectionDF$Class,predictor= as.numeric(TopModelDetectionDF$Confidence)))
+# pp <- as.numeric(TopModelDetectionDF$Confidence)
+# ll <- TopModelDetectionDF$Class
+#
+#
+# roc.s100b <- auc(roc(response=TopModelDetectionDF$Class,predictor= as.numeric(TopModelDetectionDF$Confidence)))
 
-BestF1data.framecrestedargusBinary$auc <- as.numeric(roc.s100b)
+BestF1data.framecrestedargusBinary$auc <- as.numeric(perf@y.values)
 
 
 CombinedF1data <- rbind.data.frame(CombinedF1data,BestF1data.framecrestedargusBinary)
@@ -206,12 +211,13 @@ levels(CombinedF1data$samples ) <- c("10 samples", "15 samples", "20 samples", "
 CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("5 samples","10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
                                            "All samples (LQ)", "All samples (HQ)"))
 
-AUCPlot <- ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')+xlab('')+ylab('AUC')
-F1Plot <- ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',facet.by = 'samples')
+AUCPlot <- ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')+xlab('')+ylab('AUC')+ylim(0,1)
+F1Plot <- ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',facet.by = 'samples')+ylim(0,1)+xlab('Confidence')
 ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='Precision',facet.by = 'samples')
 PrecRec <- ggpubr::ggboxplot(data=CombinedF1data,x='Precision',y='Recall',facet.by = 'samples')
 
-cowplot::plot_grid(AUCPlot,F1Plot,PrecRec,nrow=2,labels = c('A)','B)','C)')
-
+pdf('birdNET_results.pdf',height=12,width=11)
+cowplot::plot_grid(AUCPlot,F1Plot,PrecRec,nrow=3,labels = c('A)','B)','C)'),label_x = 0.9, label_y = 0.98)
+graphics.off()
 
 
