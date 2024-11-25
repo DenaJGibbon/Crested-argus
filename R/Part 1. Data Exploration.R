@@ -255,3 +255,7 @@ for(i in 1:length(ImageListShort)){
 
 }
 
+
+# Validation and test data ------------------------------------------------
+
+

@@ -15,6 +15,9 @@ detect.class <- 'crestedargus'
 PerformanceFolders <- list.files('/Users/denaclink/Desktop/RStudioProjects/Crested-argus/data/birdnet',
            full.names = TRUE)
 
+# Remove great argus because did not work
+PerformanceFolders <- PerformanceFolders[-c(41)]
+
 # Get a list of annotation selection table files
 TestDataSet <- list.files('/Users/denaclink/Downloads/Data_test_Argus/ValidationSelections',
                           full.names = TRUE)
@@ -52,7 +55,7 @@ for (a in Seq) {
   # Find the corresponding annotation selection table
   testDataIndex <- which(str_detect(TestDataSet, ShortName))
 
-  if(length(testDataIndex) > 0){
+  if(length(testDataIndex) > 0 & nrow(TempTopModelTable) > 0){
   TestDataTable <- read.delim2(TestDataSet[testDataIndex])
 
   TestDataTable$Class <- detect.class
@@ -183,40 +186,53 @@ for(a in 1:length(Thresholds)){
 
 BestF1data.framecrestedargusBinary$PerformanceFolder <- basename(PerformanceFolders[[z]])
 
-pred <- prediction( as.numeric(TopModelDetectionDF$Confidence), TopModelDetectionDF$Class)
-perf <- performance(pred, "auc")
-
-
+# TopModelDetectionDF$Class<- factor(TopModelDetectionDF$Class, levels = c("noise", "crestedargus"))
+#
+# pred <- prediction( predictions=as.numeric(TopModelDetectionDF$Confidence),
+#                     labels=TopModelDetectionDF$Class,label.ordering=c("noise", "crestedargus"))
+# perf <- performance(pred, "auc")
+#
+#
 # pp <- as.numeric(TopModelDetectionDF$Confidence)
 # ll <- TopModelDetectionDF$Class
 #
-#
-# roc.s100b <- auc(roc(response=TopModelDetectionDF$Class,predictor= as.numeric(TopModelDetectionDF$Confidence)))
+# ModelMetrics::auc(ll,pp)
+roc.s100b <- auc(roc(response=TopModelDetectionDF$Class,predictor= as.numeric(TopModelDetectionDF$Confidence),levels=c("noise", "crestedargus")))
 
-BestF1data.framecrestedargusBinary$auc <- as.numeric(perf@y.values)
+BestF1data.framecrestedargusBinary$auc <- as.numeric(roc.s100b)
 
 
 CombinedF1data <- rbind.data.frame(CombinedF1data,BestF1data.framecrestedargusBinary)
 }
 
+
+# Create plots ------------------------------------------------------------
+
+
 CombinedF1data <- na.omit(CombinedF1data)
+
+CombinedF1data$PerformanceFolder <- str_remove_all(CombinedF1data$PerformanceFolder,'crestedargus_')
+CombinedF1data$PerformanceFolder <- str_replace_all(CombinedF1data$PerformanceFolder,'mixup_highalpha','mixuphighalpha')
 CombinedF1data$samples <- as.factor(str_split_fixed(CombinedF1data$PerformanceFolder,pattern = '_',n=2)[,1])
 CombinedF1data$Precision <- round(CombinedF1data$Precision,1)
 CombinedF1data$Recall <- round(CombinedF1data$Recall,1)
 CombinedF1data$F1 <- round(CombinedF1data$F1,1)
 
-levels(CombinedF1data$samples ) <- c("10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
-                                     "5 samples", "All samples (LQ)", "All samples (HQ)")
+levels(CombinedF1data$samples ) <- c("10 \n  samples", "15 \n  samples", "20 \n  samples", "25 \n  samples", "30 \n  samples",
+                                     "5 \n  samples", "All \n (LQ)", "All \n (HQ)","3-sec  \n  (HQ)","Mixup  \n  (HQ)","Mixup high alpha  \n  (HQ)")
 
-CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("5 samples","10 samples", "15 samples", "20 samples", "25 samples", "30 samples",
-                                           "All samples (LQ)", "All samples (HQ)"))
+CombinedF1data$samples <- factor(CombinedF1data$samples, levels = c("5 \n  samples","10 \n  samples", "15 \n  samples", "20 \n  samples", "25 \n  samples", "30 \n  samples",
+                                           "All \n (LQ)", "All \n (HQ)","3-sec  \n  (HQ)","Mixup  \n  (HQ)","Mixup high alpha  \n  (HQ)"))
 
-AUCPlot <- ggpubr::ggboxplot(data=CombinedF1data,x='samples',y='auc')+xlab('')+ylab('AUC')+ylim(0,1)
+
+
+AUCPlot <-ggpubr::ggline(data=CombinedF1data,x='samples',y='auc',add = "mean_se")+ylim(0.5,1)+xlab('Samples')+ylab('AUC-ROC')
+
 F1Plot <- ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='F1',facet.by = 'samples')+ylim(0,1)+xlab('Confidence')
 ggpubr::ggboxplot(data=CombinedF1data,x='Thresholds',y='Precision',facet.by = 'samples')
 PrecRec <- ggpubr::ggboxplot(data=CombinedF1data,x='Precision',y='Recall',facet.by = 'samples')
 
-pdf('birdNET_results.pdf',height=12,width=11)
+pdf('birdNET_results.pdf',height=14,width=14)
 cowplot::plot_grid(AUCPlot,F1Plot,PrecRec,nrow=3,labels = c('A)','B)','C)'),label_x = 0.9, label_y = 0.98)
 graphics.off()
 

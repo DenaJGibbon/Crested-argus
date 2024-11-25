@@ -7,6 +7,9 @@ library(suntools)
 library(lubridate)
 library(performance)
 library(sjPlot)
+library(stringr)
+library(ggpubr)
+
 
 # Read in data
 ArgusDF <-read.csv('/Users/denaclink/Downloads/Data_test_Argus/Argus_data2024_Updated (1).csv')
@@ -54,14 +57,22 @@ m.argusslunarbinary.2  <-
           family = "binomial")
 
 
+m.argusslunarbinary.3  <-
+  glmmTMB(n.detection ~ LunarIllumination + LunarCategory + (1 | Site/LunarDate),
+          data = ArgusDFTimeSub,
+          family = "binomial")
 
 
 bbmle::AICctab(
   m.argusslunarbinary.intercept,
   m.argusslunarbinary.1,
   m.argusslunarbinary.2,
+  m.argusslunarbinary.3,
   weights = T
 )
+
+sjPlot::plot_model(m.argusslunarbinary.3, sort.est = TRUE, vline.color = "red",show.values = TRUE, show.p = FALSE,
+                   title = "Crested argus calls (night)")+theme_bw()
 
 
 # Calculate pseudo R-squared
@@ -185,7 +196,7 @@ levels(argus.aggregate.off.set$time.category) <- c('Afternoon','Night','Late Nig
 
 argus.aggregate.off.set$Rainfall <-  argus.aggregate.off.set$PRECTOTCORR
 
-#month(argus.aggregate.off.set$LunarDate)
+argus.aggregate.off.set$Season <- as.factor(substr(argus.aggregate.off.set$date,1,4))
 
 m.argusscomb.intercept <-
   glmmTMB(
@@ -235,6 +246,7 @@ MuMIn::r.squaredGLMM(m.argusscomb.2)
 check_residuals(simulate_residuals(m.argusscomb.2))
 
 sjPlot::plot_model(m.argusscomb.2, sort.est = TRUE, vline.color = "red",show.values = TRUE, show.p = FALSE,
-                   title = "Crested argus calls (binary)")+theme_bw()
+                   title = "Crested argus calls (24-hr)")+theme_bw()
 
-
+# Plot RE
+sjPlot::plot_model(m.argusscomb.2, 're',sort.est = TRUE)
